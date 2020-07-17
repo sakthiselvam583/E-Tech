@@ -1,2 +1,2 @@
-# E-Tech
-E-Tech
+# EdTech
+EdTech
