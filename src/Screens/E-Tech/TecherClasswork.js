@@ -11,7 +11,6 @@ import LoginModal from "../Components/Modal/Modal";
 
 
 import NewVideoPlayer from "./../Components/Extra/NewVideoPlayer";
-import CommentView from  './commentView'
 import PortletVideoPlayer from'./portletVideoPlayer';
 
 //import Theme9 from './addPages/theme9';
@@ -20,7 +19,7 @@ import { wait } from "@testing-library/react";
 
 
 
-export default class StudentClasswork   extends Component  {
+export default class TeacherClasswork   extends Component  {
 
     constructor(props) {
         super(props);
@@ -31,7 +30,10 @@ export default class StudentClasswork   extends Component  {
           checked: 0,
           customerId: localStorage.getItem("userId"),
           userid:JSON.parse(localStorage.getItem('Userdata')).id,
-          nextstate:true
+          nextstate:true,
+          returnchage:false,
+          SectionData:[],
+          selectedusertype:10
         }
 
     }
@@ -45,19 +47,27 @@ export default class StudentClasswork   extends Component  {
         let customerid=userlog.customerId;
         let userid=userlog.id;
         let grade=userlog.grade;
-
+console.log(userid)
    
-        
+        //position coloum insert teacher id
       
         let  viewarray=[];
         let viewcontent=[];
       
+        let  SelectGradeoption = await CmsContent.getFreedom('tbl_grade_master.Grade as label , tbl_grade_master.id as value','tbl_grade_master',`customerId =${customerid} and id in (${userlog.grade})`,'id','id'); 
        
+        let  catagory_values = await CmsContent.getFreedom(
+            "name as label , id as value",
+            "tbl_category_master",
+            `customerid=${customerid}`,
+            "id",
+            "id DESC"
+          );
 
         let tableData = await CmsContent.getFreedom(
-            " tbl_map_grouptoportlet.boxtitle,tbl_map_grouptoportlet.id as mapid,tbl_boxcontent.*",
+            " tbl_map_grouptoportlet.boxtitle,tbl_boxcontent.*",
             " tbl_map_grouptoportlet,tbl_boxcontent",
-            `tbl_boxcontent.catagory_id=119 and  tbl_map_grouptoportlet.customerId=${customerid} and tbl_boxcontent.grade=${grade} and  tbl_boxcontent.name=tbl_map_grouptoportlet.contentid `,
+            `tbl_boxcontent.catagory_id=119 and   tbl_map_grouptoportlet.position=${userid} and  tbl_map_grouptoportlet.customerId=${customerid} and tbl_boxcontent.grade=${grade} and  tbl_boxcontent.name=tbl_map_grouptoportlet.contentid `,
             "id",
             "id DESC"
           )
@@ -135,17 +145,16 @@ export default class StudentClasswork   extends Component  {
             }
             
           })
-console.log(tableData)
         let tbl_pages = await CmsContent.getFreedom(
-          " tbl_map_grouptoportlet.*,tbl_pages.sheetContent",
+          " tbl_map_grouptoportlet.boxtitle,tbl_pages.*",
           " tbl_map_grouptoportlet,tbl_pages",
-          `tbl_pages.content1=119 and   tbl_pages.customerId=${customerid} and  tbl_map_grouptoportlet.groupid=${grade} and  tbl_pages.id=tbl_map_grouptoportlet.contentid `,
+          `tbl_pages.content1=119 and  tbl_map_grouptoportlet.position=${userid}  and  tbl_pages.customerId=${customerid} and  tbl_map_grouptoportlet.groupid=${grade} and  tbl_pages.id=tbl_map_grouptoportlet.contentid `,
           "tbl_map_grouptoportlet.id",
           "tbl_map_grouptoportlet.id DESC"
         )
-       // console.log(tbl_pages.data)
+        console.log(tbl_pages.data)
         
-        this.setState({tbl_pages:tbl_pages.data})
+       
 
           tableData.data.map(async ival=>{ 
             
@@ -172,9 +181,10 @@ console.log(tableData)
             }
           })
   
-
-        
+          
+          this.setState({customerid:customerid,tbl_pages:tbl_pages.data,SectionData:catagory_values.data, SelectGradeoption:SelectGradeoption.data})
           this.viewfuncion(tableData.data,this.state.tbl_pages)
+
 
          
     }
@@ -186,8 +196,8 @@ console.log(tableData)
 let viewarray=[];
 
 
-tbl_pages.map((ival,index) =>{
- console.log(ival)
+tbl_pages.map(ival =>{
+ // console.log(ival)
 
  viewarray.push(
 
@@ -198,22 +208,6 @@ tbl_pages.map((ival,index) =>{
   <p class="card-text">{ival.boxtitle}</p>
 
    {  renderHTML(ival.sheetContent)}
- <br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.id)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
            
           </div>
         </div>
@@ -225,7 +219,7 @@ tbl_pages.map((ival,index) =>{
 console.log(tableData)
 
 
-tableData.map(async (ival,index) =>{
+tableData.map(async ival =>{
   if(ival.type==4 && ival.text!=null)
   {
 //console.log(ival)
@@ -268,27 +262,6 @@ viewarray.push(
       
 })}
 {secondarray}
-
-<br/>
- 
-<br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.mapid)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
-
-
        
       </div>
     </div>
@@ -298,7 +271,8 @@ viewarray.push(
   }
   else if(ival.type ==8)
   {
-//console.log(this.state.userid)
+ console.log(ival)
+console.log(this.state.userid)
 viewarray.push( 
               
                            
@@ -311,23 +285,6 @@ viewarray.push(
 {/* <p class="card-text" onClick={()=>window.open(`WizardForm/${this.state.userid}/${ival.evaluation}/${ival.name}`)}>{ival.evaluationvalues[0].quizName+'(view assement)'}</p> */}
 
 <button class="btn btn-link"onClick={()=>window.open(`WizardForm/${this.state.userid}/${ival.evaluation}/${ival.name}`)}>{ival.evaluationvalues[0].quizName+'(view assement)'} </button>
- 
-<br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.mapid)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
 
 
       </div>
@@ -338,8 +295,8 @@ viewarray.push(
   }
   else if(ival.type==2)
   {
- // console.log(ival)
-  //console.log(ival.overlay)
+  console.log(ival)
+  console.log(ival.overlay)
     viewarray.push( 
  
       <div class="col-sm-6">
@@ -354,23 +311,6 @@ viewarray.push(
   {/* <NewVideoPlayer Video={ival} />  */}
 
          <img class="img-rounded" src={ACCESS_POINT+'/superAdmin/file?fileurl='+ival.thumbnail} onClick={()=>this.imageclick(ival,ACCESS_POINT+'/superAdmin/file?fileurl='+ival.media)}  style={{width:100,height:100}}/> 
- 
-         <br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.mapid)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
 
 
       
@@ -393,24 +333,7 @@ viewarray.push(
   <p class="card-text">{ival.boxtitle}</p>
 
  
-   
-<br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.mapid)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
-
+  
   
           </div>
         </div>
@@ -434,24 +357,7 @@ viewarray.push(
   <img style={{width:50,height:50}} alt="Responsive image" src={ACCESS_POINT+'/superAdmin/file?fileurl='+ival.media} />
  
   
-   
-<br/>
-              <div className="row"> 
-              
-                <div className="col-sm--2" style={{marginLeft:12}}> 
-                 <label>Comment </label>
-                </div>
-                <div className="col-sm-8"> 
-                <textarea style={{width:'25pc'}} value={this.state.typevalue} onChange={(e)=>this.typetxtcontent(e.target.value)}/>
-                </div>
-                <div className="col-sm-2"> 
- <button type="button" class="btn btn-info"   onClick={(e)=>this.typecomment(this.state.typevalue,index+1,ival.mapid)}>Send{index+1}</button>
-
-                </div>
-               </div>
-   
-   <CommentView indexvalue={index+1} datavalue={ival}/>
-
+  
           </div>
         </div>
      <br/>
@@ -488,13 +394,13 @@ this.setState({viewarray})
     viewassesments = (e)=>
     {
 
-     // console.log(e)
+      console.log(e)
     }
     
     subjectvalueadd = (e) =>{
-       // console.log(e.target.value)
+        console.log(e.target.value)
     this.setState({subjectvalue:e.target.value})
-   // console.log(this.state.subjectvalue)
+    console.log(this.state.subjectvalue)
     }
 
     selectedtype =(e) =>{
@@ -506,7 +412,47 @@ this.setState({secondlanguageselected:e})
     }
 
 
-         column = [
+    addnew = async () => {
+
+        const {subjectvalue}=this.state;
+        
+        if (!subjectvalue) {
+          this.setState({ error: "Please Fill The Cohorts" });
+          return false;
+        }
+  
+        let groupArray = {};
+        groupArray.Grade = subjectvalue.trim();
+        groupArray.language  =this.state.secondlanguageselected.value;
+        groupArray.customerId = this.state.customerid;
+
+
+ console.log(groupArray)
+        try {
+
+
+            this.setState({ disableValue: true });
+            const result = await CmsContent.addMaster("tbl_grade_master", groupArray);
+
+            if(result)
+            {
+
+                 
+                 this.setState({ disableValue: false ,alertVisible:true});
+            }
+
+        }
+        catch(error)
+        {
+            console.log(error);
+
+        }
+
+
+
+    }
+
+    column = [
       {
         name: "name",
         selector: "name",
@@ -516,11 +462,8 @@ this.setState({secondlanguageselected:e})
         name: "themeId",
         selector: "themeId"
       },
-      {
-        name: "Edit",
-        selector: "themeId",
-       
-      }
+     
+      
      
     ];
 
@@ -538,35 +481,53 @@ this.setState({nextstate:false,srccode:srccode,videodata:ival})
       });
     };
 
-
-    typecomment =async(value,index,id) =>{
-      console.log(index)
-      console.log(value)
-      const formData = new FormData();
-       
-      formData.append("comment", value) ;
-      formData.append("mapid", id) ;
-      formData.append("userId", this.state.userid) ;
+    sectionnameselected = e => {
+        this.setState({ secionvalue: e.value, secionvalueselect: e });
+      };
 
 
-      
-    //  formData.append("file", userfile);
-     // formData.append("status", active);
+  gradeselcted =async(e) =>{
+console.log(e)
 
-      const result = await CmsContent.addMaster('tbl_comment',formData);
-      console.log(result)
-      if(result)
-      {
-        
-        this.setState({typevalue:''})
+//position teacher id
+    let studentselect = await CmsContent.getFreedom(
+        " tbl_user_web.*,tbl_map_grouptoportlet.boxtitle,tbl_comment.*",
+        " tbl_user_web,tbl_map_grouptoportlet,tbl_comment",
+        ` tbl_map_grouptoportlet.id=tbl_comment.mapid and tbl_user_web.customerId=${this.state.customerid} and  tbl_comment.userid=tbl_user_web.id and  tbl_map_grouptoportlet.groupid=${e.value} and tbl_map_grouptoportlet.position=${this.state.userid}  and  tbl_user_web.userType=${this.state.selectedusertype} `,
+        "tbl_comment.id",
+        "tbl_comment.id DESC"
+      )
+
+console.log(studentselect.data)
+
+    this.setState({studentdata:studentselect.data,Selectoptionselected :e })
       }
-     
-    }
 
-    typetxtcontent =(value) =>{
-      this.setState({typevalue:value})
+      studentcolumn = [
+        {
+          name: "userName",
+          selector: "userName",
+         
+        },
+        {
+          name: "mobileNumber",
+          selector: "mobileNumber"
+        } ,
+        {
+            name: "comment",
+            selector: "comment"
+         },
+         {
+            name: "boxtitle",
+            selector: "boxtitle"
+         },
+          
+       
+      ];
 
-    }
+
+
+
     render() {
     const {adduseroptions,alertVisible,disableValue,button} =this.state;
 
@@ -613,7 +574,8 @@ console.log(this.state.nextstate)
 
                   
      }
-     else{
+        
+     else if(this.state.returnchage){
       return (
         <React.Fragment>
           <main className="main my-4">
@@ -627,40 +589,21 @@ console.log(this.state.nextstate)
                     <div className="card-body" style={{marginTop:35}}>
                     <h3>Classwork</h3>
 
- 
-                    <div class="modal" id="myModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-      
-        <div class="modal-header">
-          <h4 class="modal-title">Modal Heading</h4>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        
-        <div class="modal-body">
-          Modal body..{this.state.srccode}
-
-       
-          {/* {this.state.srccode &&( <NewVideoPlayer Video={this.state.srccode} />)}   */}
-        </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-        </div>
-        
-      </div>
-    </div>
-  </div>
-
-
                     <div className="row">
-                    
-          {this.state.viewarray}
-          
-           
-    
+                          <div className="col-sm-1" />
+                            <div className="col-sm-8" >
+                            <button type="button" class="btn btn-success" onClick={()=>{this.setState({returnchage:false})}}>back</button>
+                            </div>
+                          <div className="col-sm-3" />
 
-          </div>
+                          </div>
+                          <br/>
+                        <div className="row">
+                    
+                        {this.state.viewarray}
+                        </div>
+
+  
         
                   <div className="row form-group">
                     <div className="col-sm-2" />
@@ -683,6 +626,101 @@ console.log(this.state.nextstate)
         </React.Fragment>
       );
 
+     }
+     else
+     {
+
+        return ( 
+            <React.Fragment>
+
+          <main className="main my-4">
+            <div className="container-fluid">
+              <div className="row">
+                <div className="col-sm-12">
+                  <div className="card">
+                    <div className="card-header">
+                     
+                    </div>
+                    <br/>
+                    <div className="card-body" style={{marginTop:65}}>
+   
+                        <div className="row">
+                          <div className="col-sm-1" />
+                            <div className="col-sm-8" >
+                            <button type="button" class="btn btn-success" onClick={()=>{this.setState({returnchage:true})}}>View Add Data</button>
+                            </div>
+                          <div className="col-sm-3" />
+
+                          </div>
+                          <br/>
+
+  
+   
+                          <div className="row form-group">
+                      <div className="col-sm-2" />
+                      <div className="col-sm-2">
+                          <label htmlFor="exampleInputEmail1">
+                           Select Catagory
+                          </label>
+                        </div>
+
+
+                        <div className="col-sm-5">
+                          <SingleSelect
+                           
+                            options={this.state.SectionData }
+                            handleChange={this.sectionnameselected}
+                            value={this.state.secionvalueselect}
+                            placeholder="Select Section"
+                          />
+                        </div>
+                          
+                       </div>   
+
+
+
+                       <div className="row form-group">
+                        <div className="col-sm-2" />
+                        <div className="col-sm-2">
+                          <label htmlFor="exampleInputEmail1">
+                            Select Grade
+                          </label>
+                        </div>
+                        <div className="col-sm-5">
+                          <SingleSelect
+                            
+                            options={this.state.SelectGradeoption}
+                            handleChange={this.gradeselcted}
+                            value={this.state.Selectoptionselected}
+                         
+                          />
+                        </div>
+                        
+                      </div>
+
+                      {this.state.studentdata && 
+                         (
+                        <Datatable
+                          data={this.state.studentdata}
+                          columnHeading={this.studentcolumn}
+                        />
+                      )
+                        }
+                  
+
+
+                    </div>
+ 
+                    </div>
+                    </div>
+                    </div>
+                    </div>
+                   
+                      
+                    </main>
+                    </React.Fragment>
+
+      )
      }
    
 

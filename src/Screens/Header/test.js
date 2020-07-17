@@ -69,19 +69,20 @@ class Test extends Component {
 
   
     let  selectGrade = await CmsContent.getFreedom('tbl_grade_master.*','tbl_grade_master',`customerid =199 and id in (${Userdata.grade})`,'id','id'); 
- 
-    //console.log(selectGrade)
+ //Grade
+   console.log(selectGrade.data)
       let  maptogroupuser = await CmsContent.getFreedom('tbl_maptogroup.*','tbl_maptogroup',`customerid =${Userdata.customerId} and userTypeId=10  and  groupid in (${Userdata.grade}) `,'1','1');  
 
 
 //  console.log(maptogroupuser)
 
  
-      this.setState({selectGrade:selectGrade.data[0].Grade,maptogroupuser:maptogroupuser.data
+      this.setState({selectGradedata:selectGrade.data,selectGrade:selectGrade.data[0].Grade,maptogroupuser:maptogroupuser.data
       });
 
      
       console.log(result)
+      console.log(this.state.selectGrade)
       if (result) {
   
 
@@ -102,9 +103,11 @@ class Test extends Component {
       });
     }
   var show = false;
+  console.log(this.state.selectGrade)
     fullList.map(values => {
       if(values[0].subCategoryId ){
         let innerContent=[];
+        let gradepush=[];
   //  values=values.sort(this.compareValues('listingsubcatagory','int','asc'));
         
     values.map(ival=>{
@@ -112,24 +115,51 @@ class Test extends Component {
       if(ival.categoryName=="Assessments")
 
       {
-        innerContent.push(
-          <li>
-            <Link to={'/Etech/assessmentsadd'}>
-            {ival.subCategoryName} 
-            </Link>
-          </li> 
-        );
+        this.state.selectGradedata.map(gradeview=>{
 
-      }else
-      {
-
+          gradepush.push(<li>
+            <Link  >
+            {gradeview.Grade} 
+              </Link>
+            </li>)
+        })
+        
         innerContent.push(
           <li>
             <Link >
             {ival.subCategoryName} 
             </Link>
+            
+          </li> 
+          
+        );
+         
+
+      }else
+      {
+
+
+      
+
+this.state.selectGradedata.map(gradeview=>{
+
+  gradepush.push(<li>
+    <Link  >
+    {gradeview.Grade} 
+      </Link>
+    </li>)
+})
+        innerContent.push(
+          <li>
+            <Link >
+            {ival.subCategoryName}
+            </Link>
           </li> 
         );
+
+
+       
+
       }
 
       
@@ -141,6 +171,8 @@ class Test extends Component {
          <Link>  {ival.categoryName} </Link>
           <ul className="dropdown">
             {innerContent}
+            {gradepush}
+            
           </ul>
         </li>);
    
@@ -154,25 +186,45 @@ class Test extends Component {
       else
       {
          
+let innerContent=[];
+let gradepush=[];
 
+this.state.selectGradedata.map(gradeview=>{
+  
+   //console.log(gradeview)
+
+  
+  gradepush.push(<li>
+    <Link  to={`/Etech/TeacherClasswork/${gradeview.id}`}>
+    {gradeview.Grade} 
+      </Link>
+    </li>)
+})
 
         values.map(ival=>{
        
 
           
           
-            content.push(<li>
-              <Link  >
-               {ival.categoryName} 
-                </Link>
-              </li>)
+          // innerContent.push(<li>
+          //     <Link  >
+          //     {this.state.selectGrade} 
+          //       </Link>
+          //     </li>)
             
         
         
-
+    
+            content.push(
+              <li className="cn-dropdown-item has-down">
+               <Link>  {ival.categoryName} </Link>
+                <ul className="dropdown">
+                  {gradepush}
+                </ul>
+              </li>);
         })
 
-         
+     
        
       }
    
@@ -243,13 +295,14 @@ MobileSign = async (s,v) => {
   
   loginbutton=async()=>{
 
-  console.log('herer')
+  
   console.log(this.state.searchValue)
 
    if(this.state.Userdata)
    {
     localStorage.clear()
     this.setState({logButton:'Login'})
+    window.location.href="/"
    }
    else{
 
@@ -270,8 +323,9 @@ MobileSign = async (s,v) => {
       if( localStorage.setItem('Userdata', JSON.stringify(result.data[0])))
       {
         this.setState({logButton:'Logout'});
-  
+ 
       }
+      
   
   
    if(result.data[0].userType==9)
