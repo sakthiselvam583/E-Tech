@@ -32,8 +32,11 @@ import StudentClasswork from '../Screens/E-Tech/StudentClasswork';
 import StudentHomework from '../Screens/E-Tech/StudentHomework';
 import StudentTutorail from '../Screens/E-Tech/StudentTutorial';
  import WizardForm from "../Screens/E-Tech/WizardForm" 
+ import TeacherClasswork from "../Screens/E-Tech/TecherClasswork" 
+ import CommentView from "../Screens/E-Tech/commentView" 
 
 
+ 
 
 
 
@@ -188,6 +191,26 @@ export default class AdminRoutes extends Component {
         />
 
 
+
+
+
+
+<Route
+          exact
+          path={"/Etech/TeacherClasswork/:id"}
+          render={props => {
+            return (
+              <React.Fragment>
+                <Test {...props} />
+                <div className="app-body ">
+                  <TeacherClasswork {...props} />
+                </div>
+                {/* <Footer {...props} /> */}
+              </React.Fragment>
+            )
+          }
+          }
+        />
 
 <Route
           exact
