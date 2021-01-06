@@ -8,7 +8,7 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "@tinymce/tinymce-react": "^3.6.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "i": "^0.3.6",
     "jquery": "^3.5.1",
     "mdbreact": "^4.26.0",
